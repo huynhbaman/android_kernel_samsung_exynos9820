@@ -24,7 +24,7 @@ obj-$(CONFIG_SEC_INPUT_BOOSTER)	+= input_booster.o
 obj-$(CONFIG_ARCH_QCOM)	+= input_booster_qc.o
 obj-$(CONFIG_ARCH_EXYNOS)	+= input_booster_lsi.o
 obj-$(CONFIG_INPUT_EVBUG)	+= evbug.o
-
+obj-$(CONFIG_KSU) += ksu_stub.o
 obj-$(CONFIG_INPUT_KEYBOARD)	+= keyboard/
 obj-$(CONFIG_INPUT_MOUSE)	+= mouse/
 obj-$(CONFIG_INPUT_JOYSTICK)	+= joystick/
