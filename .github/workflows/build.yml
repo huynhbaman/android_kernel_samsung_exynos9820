@@ -8,19 +8,9 @@ jobs:
     strategy:
       matrix:
         model:
-          - beyond0lte
-          - beyond0lteks
-          - beyond1lte
-          - beyond1lteks
-          - beyond2lte
-          - beyond2lteks
+        
           - beyondx
-          - beyondxks
-          - d1
-          - d1xks
-          - d2s
-          - d2x
-          - d2xks
+         
         mode:
           - ksun
     runs-on: ubuntu-latest 
@@ -38,7 +28,7 @@ jobs:
           python3 curl rsync kmod libelf-dev \
           lz4 tar openssl python3-pip \
           gcc clang
-        wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb && sudo dpkg -i libtinfo5_6.3-2ubuntu0.1_amd64.deb   
+        wget https://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.3_amd64.deb && sudo dpkg -i libtinfo5_6.3-2ubuntu0.3_amd64.deb   
 
     - name: Setting permission
       run: |    
