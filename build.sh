@@ -10,8 +10,8 @@ export OUT_DIR=${ANDROID_BUILD_TOP}/out
 # Import KernelSU-Next driver
 if [ "${MODE}" == 'ksun' ]; then
     curl -fLSS \
-        "https://raw.githubusercontent.com/manipvlator/KernelSU/refs/heads/main/kernel/setup.sh" \
-        | bash -s main
+        "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" \
+        | bash -s master
 
     test -d "${ANDROID_BUILD_TOP}/KernelSU/kernel" || {
         echo "ERROR: KernelSU setup did not create the kernel directory"
