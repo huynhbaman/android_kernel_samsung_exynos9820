@@ -2159,13 +2159,8 @@ out_ret:
 	return retval;
 }
 
-#ifdef CONFIG_KSU
-__attribute__((hot))
-extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr,
-				void *argv, void *envp, int *flags);
-#endif
 
-#ifdef CONFIG_KSU_MANUAL_HOOK
+#ifdef CONFIG_KSU
 	if (ksu_handle_execveat)
 		(void)ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
 #endif
