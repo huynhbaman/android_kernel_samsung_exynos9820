@@ -483,8 +483,7 @@ static int dump_masked_av_helper(void *k, void *d, void *args)
 	return 0;
 }
 
-void security_dump_masked_av(struct policydb *policydb,
-				    struct context *scontext,
+static void security_dump_masked_av(struct context *scontext,
 				    struct context *tcontext,
 				    u16 tclass,
 				    u32 permissions,
@@ -644,13 +643,11 @@ void services_compute_xperms_drivers(
  * Compute access vectors and extended permissions based on a context
  * structure pair for the permissions in a particular class.
  */
-void context_struct_compute_av(struct policydb *policydb,
-
-				      struct context *scontext,
-				      struct context *tcontext,
-				      u16 tclass,
-				      struct av_decision *avd,
-				      struct extended_perms *xperms)
+static void context_struct_compute_av(struct context *scontext,
+					struct context *tcontext,
+					u16 tclass,
+					struct av_decision *avd,
+					struct extended_perms *xperms)
 {
 	struct constraint_node *constraint;
 	struct role_allow *ra;
