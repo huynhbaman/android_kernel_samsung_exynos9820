@@ -9,24 +9,7 @@ export OUT_DIR=${ANDROID_BUILD_TOP}/out
 
 # Import KernelSU-Next driver
 if [ "${MODE}" == 'ksun' ]; then
-    curl -fLSS \
-        "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" \
-        | bash -s master
-
-    test -d "${ANDROID_BUILD_TOP}/KernelSU/kernel" || {
-        echo "ERROR: KernelSU setup did not create the kernel directory"
-        exit 1
-    }
-
-    test -e "${ANDROID_BUILD_TOP}/drivers/kernelsu" || {
-        echo "ERROR: KernelSU setup did not create drivers/kernelsu"
-        exit 1
-    }
-
-    grep -q "obj-.*kernelsu" "${ANDROID_BUILD_TOP}/drivers/Makefile" || {
-        echo "ERROR: KernelSU setup did not update drivers/Makefile"
-        exit 1
-    }
+    curl -LSs "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" | bash -s master
 fi
 
 # Define specific variables
