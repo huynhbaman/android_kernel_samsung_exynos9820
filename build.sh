@@ -9,7 +9,7 @@ export OUT_DIR=${ANDROID_BUILD_TOP}/out
 
 # Import KernelSU-Next driver
 if [ "${MODE}" == 'ksun' ]; then
-    curl -LSs "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" | bash -s master
+    curl -LSs "https://raw.githubusercontent.com/SukiSU-Nova/SukiSU-Nova/refs/heads/builtin-new/kernel/setup.sh" | bash -s builtin-new
 fi
 
 # Define specific variables
