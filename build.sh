@@ -107,7 +107,6 @@ void ksu_file_wrapper_init(void)
 ''')
 
 # Linux 4.14 predates __poll_t and the EPOLL* compatibility constants.
-# Supply old-kernel aliases so event_queue.c and sulog/fd.c compile.
 event_header = kernelsu / "infra" / "event_queue.h"
 text = event_header.read_text()
 compat = r'''#ifndef __KSU_LINUX_414_POLL_COMPAT
@@ -135,6 +134,23 @@ if "__KSU_LINUX_414_POLL_COMPAT" not in text:
     text = text.replace(marker, marker + "\n" + compat)
     event_header.write_text(text)
 
+# Linux 4.14 lacks the newer SECCOMP_ARCH_NATIVE_NR cache API used by
+# FinaSU.  Stub the cache operations because syscall hooking remains active
+# through the compatibility syscall backend.
+seccomp_cache = kernelsu / "infra" / "seccomp_cache.c"
+seccomp_cache.write_text(r'''#include <linux/seccomp.h>
+#include "infra/seccomp_cache.h"
+
+void ksu_seccomp_clear_cache(struct seccomp_filter *filter, int nr)
+{
+}
+
+void ksu_seccomp_allow_cache(struct seccomp_filter *filter, int nr)
+{
+}
+''')
+
+# Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h.
 sucompat = Path("drivers/kernelsu/feature/sucompat.c")
 if sucompat.exists():
     text = sucompat.read_text()
