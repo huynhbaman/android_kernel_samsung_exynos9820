@@ -9,7 +9,7 @@ export OUT_DIR=${ANDROID_BUILD_TOP}/out
 
 # Import KernelSU-Next driver
 if [ "${MODE}" == 'ksun' ]; then
-    curl -LSs "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" | bash -s a85c03ab6be57fd1a81a6d345eb5aa8275652b42
+    curl -LSs "https://raw.githubusercontent.com/huynhbaman/FinaSU---Non-GKI/refs/heads/master/kernel/setup.sh" | bash -s master
 
     # FinaSU currently defines syscall_fn_t for x86/RISC-V only.  The Exynos
     # kernel is AArch64, so define the ARM64 function-pointer type explicitly.
