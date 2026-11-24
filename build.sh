@@ -44,13 +44,16 @@ if umount.exists():
     text = text.replace("pr_err_ratelimited(", "pr_err(")
     umount.write_text(text)
 
-# FinaSU uses C11 static_assert(), but this old Samsung kernel build does
-# not define the static_assert compatibility macro.
-netisolate = Path("drivers/kernelsu/feature/netisolate.c")
-if netisolate.exists():
-    text = netisolate.read_text()
-    text = text.replace("static_assert(", "_Static_assert(")
-    netisolate.write_text(text)
+# FinaSU uses C11 static_assert(), while this old Samsung kernel build can
+# expose no compatible static_assert macro.  Convert all uses in the module
+# to the compiler-supported C11 spelling before compilation.
+kernelsu = Path("drivers/kernelsu")
+for source in kernelsu.rglob("*"):
+    if source.is_file() and source.suffix in (".c", ".h"):
+        text = source.read_text()
+        updated = text.replace("static_assert(", "_Static_assert(")
+        if updated != text:
+            source.write_text(updated)
 
 # Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h
 # header introduced by later GKI kernels.
