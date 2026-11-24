@@ -34,8 +34,7 @@ text += "\n"
 init.write_text(text)
 
 # Samsung/old out-of-tree kernels do not support statement-expression
-# ratelimit macros consistently with recent Clang.  Keep the diagnostic
-# without the printk_ratelimited macro expansion.
+# ratelimit macros consistently with recent Clang.
 umount = Path("drivers/kernelsu/feature/kernel_umount.c")
 if umount.exists():
     text = umount.read_text()
@@ -45,19 +44,18 @@ if umount.exists():
     umount.write_text(text)
 
 # FinaSU uses C11 static_assert(), while this old Samsung kernel build can
-# expose no compatible static_assert macro.  Convert all uses in the module
-# to the compiler-supported C11 spelling before compilation.
+# expose no compatible static_assert macro.
 kernelsu = Path("drivers/kernelsu")
 for source in kernelsu.rglob("*"):
     if source.is_file() and source.suffix in (".c", ".h"):
         text = source.read_text()
         updated = text.replace("static_assert(", "_Static_assert(")
+        updated = updated.replace("__poll_t", "unsigned int")
         if updated != text:
             source.write_text(updated)
 
 # Exynos9820 uses Linux 4.14.  FinaSU's runtime LSM and file-wrapper
-# implementations target newer kernels.  Replace both with compile-safe
-# stubs; syscall hooking remains active.
+# implementations target newer kernels.  Replace unsupported implementations.
 lsm_hook = kernelsu / "hook" / "lsm_hook.c"
 lsm_hook.write_text(r'''#include <linux/errno.h>
 #include <linux/printk.h>
@@ -108,8 +106,35 @@ void ksu_file_wrapper_init(void)
 }
 ''')
 
-# Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h
-# header introduced by later GKI kernels.
+# Linux 4.14 predates __poll_t and the EPOLL* compatibility constants.
+# Supply old-kernel aliases so event_queue.c and sulog/fd.c compile.
+event_header = kernelsu / "infra" / "event_queue.h"
+text = event_header.read_text()
+compat = r'''#ifndef __KSU_LINUX_414_POLL_COMPAT
+#define __KSU_LINUX_414_POLL_COMPAT
+#ifndef EPOLLIN
+#define EPOLLIN POLLIN
+#endif
+#ifndef EPOLLRDNORM
+#define EPOLLRDNORM POLLRDNORM
+#endif
+#ifndef EPOLLHUP
+#define EPOLLHUP POLLHUP
+#endif
+#ifndef EPOLLERR
+#define EPOLLERR POLLERR
+#endif
+#ifndef EPOLLRDHUP
+#define EPOLLRDHUP POLLHUP
+#endif
+#endif
+
+'''
+if "__KSU_LINUX_414_POLL_COMPAT" not in text:
+    marker = "#include <linux/wait.h>\n"
+    text = text.replace(marker, marker + "\n" + compat)
+    event_header.write_text(text)
+
 sucompat = Path("drivers/kernelsu/feature/sucompat.c")
 if sucompat.exists():
     text = sucompat.read_text()
