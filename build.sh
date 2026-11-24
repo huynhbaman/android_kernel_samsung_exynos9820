@@ -55,10 +55,9 @@ for source in kernelsu.rglob("*"):
         if updated != text:
             source.write_text(updated)
 
-# Exynos9820 uses Linux 4.14.  FinaSU's new-Kernel LSM list/pprev
-# adaptation is newer than this kernel and does not match its
-# security_hook_list layout.  Replace the unsupported runtime LSM patching
-# implementation with a compile-safe stub.  Syscall hooking remains active.
+# Exynos9820 uses Linux 4.14.  FinaSU's runtime LSM and file-wrapper
+# implementations target newer kernels.  Replace both with compile-safe
+# stubs; syscall hooking remains active.
 lsm_hook = kernelsu / "hook" / "lsm_hook.c"
 lsm_hook.write_text(r'''#include <linux/errno.h>
 #include <linux/printk.h>
@@ -89,6 +88,22 @@ void ksu_lsm_hook_init(void)
 }
 
 void ksu_lsm_hook_exit(void)
+{
+}
+''')
+
+file_wrapper = kernelsu / "infra" / "file_wrapper.c"
+file_wrapper.write_text(r'''#include <linux/errno.h>
+#include <linux/printk.h>
+#include "infra/file_wrapper.h"
+
+int ksu_install_file_wrapper(int fd)
+{
+	pr_warn_once("FinaSU: file wrapper is unsupported on this kernel\n");
+	return -EOPNOTSUPP;
+}
+
+void ksu_file_wrapper_init(void)
 {
 }
 ''')
