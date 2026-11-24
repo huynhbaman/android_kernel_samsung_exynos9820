@@ -36,24 +36,29 @@ init.write_text(text)
 # Samsung/old out-of-tree kernels do not support statement-expression
 # ratelimit macros consistently with recent Clang.  Keep the diagnostic
 # without the printk_ratelimited macro expansion.
-dumount = Path("drivers/kernelsu/feature/kernel_umount.c")
-text = umount.read_text()
-text = text.replace("pr_info_ratelimited(", "pr_info(")
-umount.write_text(text)
+umount = Path("drivers/kernelsu/feature/kernel_umount.c")
+if umount.exists():
+    text = umount.read_text()
+    text = text.replace("pr_info_ratelimited(", "pr_info(")
+    text = text.replace("pr_warn_ratelimited(", "pr_warn(")
+    text = text.replace("pr_err_ratelimited(", "pr_err(")
+    umount.write_text(text)
 
 # FinaSU uses C11 static_assert(), but this old Samsung kernel build does
 # not define the static_assert compatibility macro.
 netisolate = Path("drivers/kernelsu/feature/netisolate.c")
-text = netisolate.read_text()
-text = text.replace("static_assert(", "_Static_assert(")
-netisolate.write_text(text)
+if netisolate.exists():
+    text = netisolate.read_text()
+    text = text.replace("static_assert(", "_Static_assert(")
+    netisolate.write_text(text)
 
 # Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h
 # header introduced by later GKI kernels.
 sucompat = Path("drivers/kernelsu/feature/sucompat.c")
-text = sucompat.read_text()
-text = text.replace("#include <linux/pgtable.h>", "#include <asm/pgtable.h>")
-sucompat.write_text(text)
+if sucompat.exists():
+    text = sucompat.read_text()
+    text = text.replace("#include <linux/pgtable.h>", "#include <asm/pgtable.h>")
+    sucompat.write_text(text)
 PY
 fi
 
@@ -75,7 +80,7 @@ beyond1lte)
     TZDEV=new
 ;;
 beyond1lteks)
-    BOARD=SRPRI28D006KU
+    BOARD=SRPRI28D007KU
     SOC=exynos9820
     TZDEV=new
 ;;
@@ -85,7 +90,7 @@ beyond2lte)
     TZDEV=new
 ;;
 beyond2lteks)
-    BOARD=SRPRI28E007KU
+    BOARD=SRPRI28C007KU
     SOC=exynos9820
     TZDEV=new
 ;;
@@ -95,12 +100,12 @@ beyondx)
     TZDEV=new
 ;;
 beyondxks)
-    BOARD=SRPRK21D006KU
+    BOARD=SRPRK21D014KU
     SOC=exynos9820
     TZDEV=new
 ;;
 d1)
-    BOARD=SRPSD26B009KU
+    BOARD=SRPSD26A012KU
     SOC=exynos9825
     TZDEV=old
 ;;
@@ -126,6 +131,7 @@ d2xks)
 ;;
 *)
     exit
+;;
 esac
 echo -n "${BOARD}" > "${AIK_DIR}/split_img/boot.img-board"
 
@@ -133,8 +139,6 @@ echo -n "${BOARD}" > "${AIK_DIR}/split_img/boot.img-board"
 echo -e "\nCONFIG_MODEL_${DEVICE^^}=y" >> "${ANDROID_BUILD_TOP}/arch/arm64/configs/${SOC}.config"
 
 # Setting tzdev drvier
-# All Galaxy S10 Series and Korean Note 10 Series use new tzdev drvier, but Global Note 10 Series uses old tzdev drvier
-# So, we need this file setting codes (Samsung issue)
 rm -rf ${ANDROID_BUILD_TOP}/drivers/misc/tzdev
 cp -ar ${ANDROID_BUILD_TOP}/prebuilts/tzdev/tzdev_${TZDEV} ${ANDROID_BUILD_TOP}/drivers/misc/tzdev
 
