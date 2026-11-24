@@ -135,8 +135,7 @@ if "__KSU_LINUX_414_POLL_COMPAT" not in text:
     event_header.write_text(text)
 
 # Linux 4.14 lacks the newer SECCOMP_ARCH_NATIVE_NR cache API used by
-# FinaSU.  Stub the cache operations because syscall hooking remains active
-# through the compatibility syscall backend.
+# FinaSU. Stub the cache operations because syscall hooking remains active.
 seccomp_cache = kernelsu / "infra" / "seccomp_cache.c"
 seccomp_cache.write_text(r'''#include <linux/seccomp.h>
 #include "infra/seccomp_cache.h"
@@ -149,6 +148,13 @@ void ksu_seccomp_allow_cache(struct seccomp_filter *filter, int nr)
 {
 }
 ''')
+
+# Linux 4.14 uses <linux/mount.h>; newer FinaSU sources use the UAPI path.
+mount_ns = kernelsu / "infra" / "su_mount_ns.c"
+if mount_ns.exists():
+    text = mount_ns.read_text()
+    text = text.replace("#include <uapi/linux/mount.h>", "#include <linux/mount.h>")
+    mount_ns.write_text(text)
 
 # Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h.
 sucompat = Path("drivers/kernelsu/feature/sucompat.c")
