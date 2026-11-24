@@ -36,7 +36,7 @@ init.write_text(text)
 # Samsung/old out-of-tree kernels do not support statement-expression
 # ratelimit macros consistently with recent Clang.  Keep the diagnostic
 # without the printk_ratelimited macro expansion.
-umount = Path("drivers/kernelsu/feature/kernel_umount.c")
+dumount = Path("drivers/kernelsu/feature/kernel_umount.c")
 text = umount.read_text()
 text = text.replace("pr_info_ratelimited(", "pr_info(")
 umount.write_text(text)
@@ -47,6 +47,13 @@ netisolate = Path("drivers/kernelsu/feature/netisolate.c")
 text = netisolate.read_text()
 text = text.replace("static_assert(", "_Static_assert(")
 netisolate.write_text(text)
+
+# Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h
+# header introduced by later GKI kernels.
+sucompat = Path("drivers/kernelsu/feature/sucompat.c")
+text = sucompat.read_text()
+text = text.replace("#include <linux/pgtable.h>", "#include <asm/pgtable.h>")
+sucompat.write_text(text)
 PY
 fi
 
