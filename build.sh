@@ -40,6 +40,13 @@ umount = Path("drivers/kernelsu/feature/kernel_umount.c")
 text = umount.read_text()
 text = text.replace("pr_info_ratelimited(", "pr_info(")
 umount.write_text(text)
+
+# FinaSU uses C11 static_assert(), but this old Samsung kernel build does
+# not define the static_assert compatibility macro.
+netisolate = Path("drivers/kernelsu/feature/netisolate.c")
+text = netisolate.read_text()
+text = text.replace("static_assert(", "_Static_assert(")
+netisolate.write_text(text)
 PY
 fi
 
