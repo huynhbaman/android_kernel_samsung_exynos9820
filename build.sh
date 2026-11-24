@@ -9,7 +9,30 @@ export OUT_DIR=${ANDROID_BUILD_TOP}/out
 
 # Import KernelSU-Next driver
 if [ "${MODE}" == 'ksun' ]; then
-    curl -LSs "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" | bash -s master
+    curl -LSs "https://raw.githubusercontent.com/LyraVoid/FinaSU/refs/heads/master/kernel/setup.sh" | bash -s a85c03ab6be57fd1a81a6d345eb5aa8275652b42
+
+    # FinaSU currently defines syscall_fn_t for x86/RISC-V only.  The Exynos
+    # kernel is AArch64, so define the ARM64 function-pointer type explicitly.
+    python3 - <<'PY'
+from pathlib import Path
+
+header = Path("drivers/kernelsu/hook/syscall_hook.h")
+text = header.read_text()
+if "#elif defined(__aarch64__)" not in text:
+    text = text.replace(
+        "#elif defined(__riscv)\n",
+        "#elif defined(__aarch64__)\n"
+        "typedef long (*syscall_fn_t)(const struct pt_regs *);\n"
+        "#elif defined(__riscv)\n",
+    )
+header.write_text(text)
+
+init = Path("drivers/kernelsu/core/init.c")
+text = init.read_text()
+text = "\n".join(line for line in text.splitlines() if "MODULE_IMPORT_NS(" not in line)
+text += "\n"
+init.write_text(text)
+PY
 fi
 
 # Define specific variables
@@ -30,7 +53,7 @@ beyond1lte)
     TZDEV=new
 ;;
 beyond1lteks)
-    BOARD=SRPRI28D007KU
+    BOARD=SRPRI28D006KU
     SOC=exynos9820
     TZDEV=new
 ;;
@@ -89,7 +112,7 @@ echo -e "\nCONFIG_MODEL_${DEVICE^^}=y" >> "${ANDROID_BUILD_TOP}/arch/arm64/confi
 
 # Setting tzdev drvier
 # All Galaxy S10 Series and Korean Note 10 Series use new tzdev drvier, but Global Note 10 Series uses old tzdev drvier
-# So, we need this file setting codes (Scamsung issue)
+# So, we need this file setting codes (Samsung issue)
 rm -rf ${ANDROID_BUILD_TOP}/drivers/misc/tzdev
 cp -ar ${ANDROID_BUILD_TOP}/prebuilts/tzdev/tzdev_${TZDEV} ${ANDROID_BUILD_TOP}/drivers/misc/tzdev
 
@@ -118,7 +141,7 @@ DEFCONFIG="exynos9820-${DEVICE}_defconfig ${SOC}.config"
 if [ "${MODE}" == "ksun" ]; then
     CONFIGS="${DEFCONFIG} kernelsu.config"
 else
-    CONFIGS="${DEFCONFIG}"    
+    CONFIGS="${DEFCONFIG}"
 fi
 
 make ${MAKE_ARGS} ${CONFIGS} || exit 1
