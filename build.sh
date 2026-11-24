@@ -55,6 +55,44 @@ for source in kernelsu.rglob("*"):
         if updated != text:
             source.write_text(updated)
 
+# Exynos9820 uses Linux 4.14.  FinaSU's new-Kernel LSM list/pprev
+# adaptation is newer than this kernel and does not match its
+# security_hook_list layout.  Replace the unsupported runtime LSM patching
+# implementation with a compile-safe stub.  Syscall hooking remains active.
+lsm_hook = kernelsu / "hook" / "lsm_hook.c"
+lsm_hook.write_text(r'''#include <linux/errno.h>
+#include <linux/printk.h>
+#include "lsm_hook.h"
+
+int ksu_lsm_hook(struct ksu_lsm_hook *hook)
+{
+	pr_warn_once("FinaSU: LSM runtime hooking is unsupported on this kernel\n");
+	return -EOPNOTSUPP;
+}
+
+void ksu_lsm_unhook(struct ksu_lsm_hook *hook)
+{
+}
+
+int ksu_register_lsm_hook(struct ksu_lsm_hook *hook)
+{
+	return ksu_lsm_hook(hook);
+}
+
+void ksu_unregister_lsm_hook(struct ksu_lsm_hook *hook)
+{
+	ksu_lsm_unhook(hook);
+}
+
+void ksu_lsm_hook_init(void)
+{
+}
+
+void ksu_lsm_hook_exit(void)
+{
+}
+''')
+
 # Linux 4.x uses asm/pgtable.h rather than the newer linux/pgtable.h
 # header introduced by later GKI kernels.
 sucompat = Path("drivers/kernelsu/feature/sucompat.c")
