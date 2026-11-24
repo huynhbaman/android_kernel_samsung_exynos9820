@@ -32,6 +32,14 @@ text = init.read_text()
 text = "\n".join(line for line in text.splitlines() if "MODULE_IMPORT_NS(" not in line)
 text += "\n"
 init.write_text(text)
+
+# Samsung/old out-of-tree kernels do not support statement-expression
+# ratelimit macros consistently with recent Clang.  Keep the diagnostic
+# without the printk_ratelimited macro expansion.
+umount = Path("drivers/kernelsu/feature/kernel_umount.c")
+text = umount.read_text()
+text = text.replace("pr_info_ratelimited(", "pr_info(")
+umount.write_text(text)
 PY
 fi
 
